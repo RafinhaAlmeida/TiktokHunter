@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caçador de TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0b0c10; --painel:#13151b; --painel2:#1a1d25; --borda:#262a35;
+    --txt:#eef0f5; --sub:#8b92a5; --ciano:#25f4ee; --rosa:#fe2c55; --verde:#3ddc84; --amarelo:#ffc53d;
+    --raio:14px;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Inter,system-ui,sans-serif; background:var(--bg); color:var(--txt); font-size:14px; }
+  body::before { content:""; position:fixed; inset:-30% -10% auto auto; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle, rgba(254,44,85,.16), transparent 65%); pointer-events:none; }
+  body::after { content:""; position:fixed; inset:auto auto -25% -10%; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle, rgba(37,244,238,.10), transparent 65%); pointer-events:none; }
+
+  .app { display:grid; grid-template-columns:260px 1fr; min-height:100vh; position:relative; z-index:1; }
+  aside { border-right:1px solid var(--borda); padding:24px 16px; background:rgba(19,21,27,.6); backdrop-filter:blur(8px); }
+  .marca { font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:20px; margin:0 0 4px; letter-spacing:-.3px; }
+  .marca span { background:linear-gradient(90deg,var(--ciano),var(--rosa)); -webkit-background-clip:text; color:transparent; }
+  .marca-sub { color:var(--sub); font-size:12px; margin:0 0 24px; }
+  .rotulo { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--sub); margin:0 0 10px; }
+  .nicho { width:100%; display:flex; align-items:center; gap:10px; background:none; border:1px solid transparent; border-radius:10px;
+    padding:10px; margin-bottom:4px; color:var(--txt); font:inherit; cursor:pointer; text-align:left; transition:.15s; }
+  .nicho:hover { background:var(--painel2); }
+  .nicho.ativo { background:var(--painel2); border-color:var(--borda); box-shadow:inset 3px 0 0 var(--rosa); }
+  .avatar { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-weight:700; font-size:13px; flex:none;
+    background:linear-gradient(135deg,rgba(37,244,238,.25),rgba(254,44,85,.25)); }
+  .nicho small { display:block; color:var(--sub); font-size:11px; margin-top:2px; }
+
+  main { padding:28px 32px 60px; max-width:1100px; }
+  .topo { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+  .topo h1 { font-family:"Space Grotesk",sans-serif; font-size:28px; margin:0; letter-spacing:-.5px; }
+  .topo p { color:var(--sub); margin:4px 0 0; }
+  .pilulas { display:flex; gap:8px; }
+  .pilula { border:1px solid var(--borda); border-radius:99px; padding:6px 12px; font-size:12px; color:var(--sub); background:var(--painel); }
+  .pilula b { color:var(--txt); }
+
+  .passos { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .card { background:var(--painel); border:1px solid var(--borda); border-radius:var(--raio); padding:18px; }
+  .card h2 { display:flex; align-items:center; gap:10px; font-size:15px; margin:0 0 12px; }
+  .n { width:22px; height:22px; border-radius:7px; background:var(--painel2); border:1px solid var(--borda); display:grid; place-items:center; font-size:12px; color:var(--ciano); }
+  textarea { width:100%; min-height:96px; background:var(--bg); color:var(--txt); border:1px solid var(--borda); border-radius:10px; padding:10px 12px;
+    font:12px ui-monospace,Consolas,monospace; line-height:1.6; resize:vertical; outline:none; }
+  textarea:focus, select:focus { border-color:var(--ciano); }
+  .acoes { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .btn { background:var(--painel2); color:var(--txt); border:1px solid var(--borda); border-radius:9px; padding:8px 14px; font:inherit; font-size:13px; cursor:pointer; transition:.15s; }
+  .btn:hover { border-color:#3a4050; }
+  .btn:disabled { opacity:.5; cursor:wait; }
+  .btn.principal { background:linear-gradient(90deg,var(--rosa),#ff5277); border:none; font-weight:600; padding:11px 24px; font-size:14px; box-shadow:0 6px 24px rgba(254,44,85,.25); }
+  .btn.principal:hover { filter:brightness(1.08); }
+
+  .formato-vazio { color:var(--sub); font-size:13px; line-height:1.6; }
+  .linha-f { display:flex; gap:10px; margin-bottom:8px; font-size:13px; }
+  .linha-f > span:first-child { color:var(--sub); width:78px; flex:none; padding-top:2px; }
+  .chip { display:inline-block; background:var(--bg); border:1px solid var(--borda); border-radius:99px; padding:2px 9px; margin:0 4px 4px 0; font-size:12px; }
+  .chip.som { border-color:rgba(37,244,238,.4); color:var(--ciano); }
+
+  .controle { display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px; }
+  label { font-size:12px; color:var(--sub); display:flex; flex-direction:column; gap:6px; }
+  select { background:var(--bg); color:var(--txt); border:1px solid var(--borda); border-radius:9px; padding:9px 12px; font:inherit; outline:none; }
+  .qtd { display:flex; gap:4px; }
+  .qtd button { width:38px; height:38px; border-radius:9px; border:1px solid var(--borda); background:var(--bg); color:var(--txt); font:inherit; cursor:pointer; }
+  .qtd button.on { background:var(--ciano); color:#06201f; border-color:var(--ciano); font-weight:700; }
+
+  .status { display:none; align-items:center; gap:10px; margin:18px 0 8px; color:var(--sub); font-size:13px; }
+  .status.on { display:flex; }
+  .spin { width:16px; height:16px; border:2px solid var(--borda); border-top-color:var(--rosa); border-radius:50%; animation:g 1s linear infinite; }
+  @keyframes g { to { transform:rotate(360deg); } }
+  details { margin:10px 0 18px; }
+  summary { cursor:pointer; color:var(--sub); font-size:12px; }
+  #log { font:12px ui-monospace,Consolas,monospace; color:var(--sub); white-space:pre-wrap; max-height:220px; overflow:auto; background:var(--painel);
+    border:1px solid var(--borda); border-radius:10px; padding:10px 12px; margin-top:8px; }
+
+  .grade { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+  .video { background:var(--painel); border:1px solid var(--borda); border-radius:var(--raio); overflow:hidden; display:flex; flex-direction:column; animation:sobe .35s ease both; }
+  @keyframes sobe { from { opacity:0; transform:translateY(8px); } }
+  .tela { position:relative; aspect-ratio:9/16; background:#000; }
+  .tela iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .posicao { position:absolute; top:10px; left:10px; z-index:2; background:rgba(0,0,0,.7); border-radius:8px; padding:3px 9px; font-weight:700; font-family:"Space Grotesk",sans-serif; }
+  .corpo { padding:12px 14px 14px; display:flex; flex-direction:column; gap:8px; }
+  .nota-linha { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--sub); }
+  .barra { flex:1; height:6px; border-radius:99px; background:var(--bg); overflow:hidden; }
+  .barra i { display:block; height:100%; border-radius:99px; }
+  .nota-num { font-weight:700; color:var(--txt); width:38px; text-align:right; }
+  .meta { color:var(--sub); font-size:12px; line-height:1.5; }
+  .autor { color:var(--txt); font-weight:600; }
+  .motivos { display:flex; flex-wrap:wrap; gap:4px; }
+  .motivos span { font-size:11px; border-radius:6px; padding:2px 7px; background:rgba(61,220,132,.12); color:var(--verde); }
+  .botoes-v { display:flex; gap:6px; }
+  .botoes-v .btn { flex:1; text-align:center; text-decoration:none; padding:7px; }
+  .barra-todos { display:flex; justify-content:space-between; align-items:center; margin:4px 0 14px; }
+  .barra-todos h3 { margin:0; font-size:15px; }
+  .vazio { text-align:center; color:var(--sub); padding:40px 20px; border:1px dashed var(--borda); border-radius:var(--raio); }
+
+  .toast { position:fixed; bottom:24px; left:50%; transform:translate(-50%,20px); opacity:0; background:var(--txt); color:var(--bg);
+    padding:9px 16px; border-radius:10px; font-weight:600; font-size:13px; transition:.25s; z-index:9; }
+  .toast.on { opacity:1; transform:translate(-50%,0); }
+
+  @media (max-width:860px) {
+    .app { grid-template-columns:1fr; }
+    aside { border-right:0; border-bottom:1px solid var(--borda); }
+    .lista-nichos { display:flex; gap:6px; overflow-x:auto; }
+    .nicho { width:auto; flex:none; }
+    .passos { grid-template-columns:1fr; }
+    main { padding:20px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <p class="marca">Caçador de <span>TikTok</span></p>
+    <p class="marca-sub">Busca por formato, não por hashtag</p>
+    <p class="rotulo">Nichos</p>
+    <div class="lista-nichos">
+      {% for n in nichos %}
+      <button class="nicho{% if loop.first %} ativo{% endif %}" data-nome="{{ n.nome }}" data-exemplos="{{ n.exemplos|join('\n') }}">
+        <span class="avatar">{{ n.nome.split()[0][0] }}{{ n.nome.split()[-1][0] }}</span>
+        <span>{{ n.nome }}<small>{{ n.exemplos|length }} exemplo(s)</small></span>
+      </button>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <main>
+    <div class="topo">
+      <div>
+        <h1 id="titulo"></h1>
+        <p>Ensine o formato com exemplos e cace vídeos parecidos.</p>
+      </div>
+      <div class="pilulas">
+        <span class="pilula">Duração <b>≤ {{ duracao_max }}s</b></span>
+        <span class="pilula">Máximo <b>{{ max_links }} links</b></span>
+      </div>
+    </div>
+
+    <div class="passos">
+      <section class="card">
+        <h2><span class="n">1</span>Exemplos do formato</h2>
+        <textarea id="exemplos" placeholder="Cole 2 ou mais links de vídeos nesse formato, um por linha"></textarea>
+        <div class="acoes">
+          <button class="btn" id="salvar">Salvar</button>
+          <button class="btn" id="verFormato">Analisar formato</button>
+          <button class="btn" id="reaprender" title="Ignora o cache e estuda os exemplos de novo">Reaprender</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="n">2</span>O que ele entendeu</h2>
+        <div id="formato"><p class="formato-vazio">Clique em <b>Analisar formato</b> para ver o som, as hashtags, as palavras e os criadores que definem esse tipo de vídeo.</p></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2><span class="n">3</span>Caçar vídeos</h2>
+      <div class="controle">
+        <label>Quantidade
+          <div class="qtd" id="qtd">{% for i in range(1, max_links + 1) %}<button data-v="{{ i }}" class="{% if i == max_links %}on{% endif %}">{{ i }}</button>{% endfor %}</div>
+        </label>
+        <label>Organizar por
+          <select id="ordem">{% for k, nome in ordens.items() %}<option value="{{ k }}">{{ nome }}</option>{% endfor %}</select>
+        </label>
+        <button class="btn principal" id="buscar">Caçar vídeos</button>
+      </div>
+    </section>
+
+    <div class="status" id="status"><div class="spin"></div><span id="statusTxt"></span></div>
+    <details id="detLog"><summary>Ver registro da busca</summary><div id="log">Nada ainda.</div></details>
+    <div id="res"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const fmt = n => n == null ? '—' : Intl.NumberFormat('pt-BR', {notation:'compact'}).format(n);
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const chips = (arr, cls='') => (arr && arr.length) ? arr.map(x => `<span class="chip ${cls}">${esc(x)}</span>`).join('') : '<span style="color:var(--sub)">—</span>';
+  const corNota = n => n >= .6 ? 'var(--verde)' : n >= .35 ? 'var(--amarelo)' : 'var(--rosa)';
+  const idVideo = url => (url.match(/video\/(\d+)/) || [])[1];
+  let nicho, qtd = {{ max_links }};
+
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600); }
+  function status(txt) { $('status').classList.toggle('on', !!txt); $('statusTxt').textContent = txt || ''; }
+  function copiar(txt, msg) { navigator.clipboard.writeText(txt); toast(msg); }
+  const vazioFormato = '<p class="formato-vazio">Clique em <b>Analisar formato</b> para ver o som, as hashtags, as palavras e os criadores que definem esse tipo de vídeo.</p>';
+
+  function escolher(btn) {
+    document.querySelectorAll('.nicho').forEach(x => x.classList.remove('ativo'));
+    btn.classList.add('ativo'); nicho = btn.dataset.nome;
+    $('titulo').textContent = nicho; $('exemplos').value = btn.dataset.exemplos;
+    $('formato').innerHTML = vazioFormato; $('res').innerHTML = '';
+  }
+  document.querySelectorAll('.nicho').forEach(b => b.onclick = () => escolher(b));
+  escolher(document.querySelector('.nicho.ativo'));
+
+  $('qtd').querySelectorAll('button').forEach(b => b.onclick = e => {
+    e.preventDefault(); qtd = +b.dataset.v;
+    $('qtd').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  });
+
+  async function post(url, body) {
+    const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    return r.json();
+  }
+
+  async function salvar() {
+    const links = $('exemplos').value.split('\n').filter(l => l.trim());
+    const d = await post('/exemplos', {nicho, links});
+    const btn = document.querySelector(`.nicho[data-nome="${CSS.escape(nicho)}"]`);
+    btn.dataset.exemplos = d.links.join('\n'); $('exemplos').value = d.links.join('\n');
+    btn.querySelector('small').textContent = d.links.length + ' exemplo(s)';
+    return d.links;
+  }
+  $('salvar').onclick = async () => { await salvar(); toast('Exemplos salvos'); };
+
+  function mostrarLog(linhas, erro) { $('log').textContent = (linhas || []).join('\n') + (erro ? '\nErro: ' + erro : '') || 'Nada ainda.'; }
+
+  async function analisar(reaprender) {
+    const botoes = [$('verFormato'), $('reaprender')]; botoes.forEach(b => b.disabled = true);
+    status('Estudando os vídeos de exemplo...');
+    try {
+      await salvar();
+      const d = await post('/formato', {nicho, reaprender});
+      mostrarLog(d.log, d.erro);
+      if (!d.ok) { $('formato').innerHTML = `<p class="formato-vazio" style="color:var(--rosa)">${esc(d.erro)}</p>`; $('detLog').open = true; return; }
+      const f = d.formato;
+      $('formato').innerHTML = `
+        <div class="linha-f"><span>Som</span><div>${chips(f.sons, 'som')}</div></div>
+        <div class="linha-f"><span>Hashtags</span><div>${chips(f.hashtags.map(h => '#' + h))}</div></div>
+        <div class="linha-f"><span>Palavras</span><div>${chips(f.palavras)}</div></div>
+        <div class="linha-f"><span>Criadores</span><div>${chips(f.autores.map(a => '@' + a))}</div></div>
+        <div class="linha-f"><span>Detalhes</span><div style="color:var(--sub)">${f.exemplos_lidos} exemplo(s) lidos · ${f.duracao ? f.duracao.map(Math.round).join('–') + 's' : 'duração ?'} · visual ${f.visual ? f.modo_visual : 'indisponível'}</div></div>`;
+    } catch (e) { mostrarLog([], e); }
+    finally { status(''); botoes.forEach(b => b.disabled = false); }
+  }
+  $('verFormato').onclick = () => analisar(false);
+  $('reaprender').onclick = () => analisar(true);
+
+  function cartao(v, i) {
+    const id = idVideo(v.url);
+    return `
+      <article class="video" style="animation-delay:${i * 70}ms">
+        <div class="tela">
+          <span class="posicao">#${i + 1}</span>
+          ${id ? `<iframe src="https://www.tiktok.com/embed/v2/${id}" loading="lazy" allow="encrypted-media; fullscreen" allowfullscreen></iframe>` : ''}
+        </div>
+        <div class="corpo">
+          <div class="nota-linha">Formato
+            <div class="barra"><i style="width:${Math.round(v.nota * 100)}%;background:${corNota(v.nota)}"></i></div>
+            <span class="nota-num">${Math.round(v.nota * 100)}%</span>
+          </div>
+          <div class="meta">${v.autor ? `<span class="autor">@${esc(v.autor)}</span> · ` : ''}${Math.round(v.duracao)}s · ${fmt(v.views)} views · ${fmt(v.curtidas)} curtidas<br>achado em ${esc(v.fonte)}</div>
+          ${v.motivos.length ? `<div class="motivos">${v.motivos.map(m => `<span>${esc(m)}</span>`).join('')}</div>` : ''}
+          <div class="botoes-v">
+            <a class="btn" href="${esc(v.url)}" target="_blank" rel="noopener">Abrir</a>
+            <button class="btn" data-url="${esc(v.url)}">Copiar link</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  $('buscar').onclick = async () => {
+    const btn = $('buscar'), res = $('res');
+    btn.disabled = true; btn.textContent = 'Caçando...'; res.innerHTML = '';
+    status('Aprendendo o formato e procurando vídeos parecidos — pode levar alguns minutos...');
+    try {
+      const links = await salvar();
+      if (!links.length) { res.innerHTML = '<div class="vazio">Cole pelo menos 1 link de exemplo no passo 1.</div>'; return; }
+      const d = await post('/buscar', {nicho, quantidade:qtd, ordem:$('ordem').value});
+      mostrarLog(d.log, d.erro);
+      if (!d.ok) { res.innerHTML = `<div class="vazio">Erro: ${esc(d.erro)}</div>`; $('detLog').open = true; return; }
+      if (!d.videos.length) {
+        res.innerHTML = '<div class="vazio">Nenhum vídeo parecido encontrado.<br>Adicione mais exemplos ou baixe <code>NOTA_MINIMA</code> em buscador.py.</div>';
+        return;
+      }
+      res.innerHTML = `
+        <div class="barra-todos"><h3>${d.videos.length} vídeo(s) encontrados</h3><button class="btn" id="todos">Copiar todos os links</button></div>
+        <div class="grade">${d.videos.map(cartao).join('')}</div>`;
+      res.querySelectorAll('[data-url]').forEach(b => b.onclick = () => copiar(b.dataset.url, 'Link copiado'));
+      $('todos').onclick = () => copiar(d.videos.map((v, i) => `${i + 1}. ${v.url}`).join('\n'), 'Todos os links copiados');
+    } catch (e) { mostrarLog([], e); res.innerHTML = `<div class="vazio">Erro: ${esc(e)}</div>`; }
+    finally { status(''); btn.disabled = false; btn.textContent = 'Caçar vídeos'; }
+  };
+</script>
+</body>
+</html>
