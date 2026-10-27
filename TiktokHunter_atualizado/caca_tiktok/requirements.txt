@@ -1,0 +1,8 @@
+flask>=3.0
+yt-dlp[default,curl-cffi]>=2025.1.1
+pillow>=10.0
+# Visual inteligente (CLIP) sem torch — funciona no Python 3.15:
+numpy>=2.0
+safetensors>=0.4
+# Abre o TikTok num Chrome de verdade (bem mais confiável):
+playwright>=1.45
